@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -33,14 +34,14 @@ namespace LINQ.Exercises
 		[TestMethod]
 		public void OrderWordsAlphabetically_Return5Words()
 		{
-			var result = TestData.OrderByWordsExtended;
+			var result = TestData.OrderByWordsExtended.OrderBy(w => w);
 			Assert.IsTrue(result.SequenceEqual(new[] { "apple", "blueberry", "cherry", "tamarind", "zuchini" }));
 		}
 
 		[TestMethod]
 		public void OrderWordsBySecondLetter_Return5Words()
 		{
-			var result = TestData.OrderByWordsExtended;
+			var result = TestData.OrderByWordsExtended.OrderBy(w => w[1]);
 
 			Assert.IsTrue(result.SequenceEqual(new[] { "tamarind", "cherry", "blueberry", "apple", "zuchini" }));
 		}
@@ -49,7 +50,7 @@ namespace LINQ.Exercises
 		[TestMethod]
 		public void OrderWordsByFirstLetterDescendingAlphabetically_Return5Words()
 		{
-			var result = TestData.OrderByWordsExtended;
+			var result = TestData.OrderByWordsExtended.OrderByDescending(w => w);
 
 			Assert.IsTrue(result.SequenceEqual(new[] { "zuchini", "tamarind", "cherry", "blueberry", "apple" }));
 		}
@@ -58,7 +59,7 @@ namespace LINQ.Exercises
 		[TestMethod]
 		public void OrderWordsByByLength_Return3Words()
 		{
-			var result = TestData.OrderByWords;
+			var result = TestData.OrderByWords.OrderBy(w => w.Length);
 
 			Assert.IsTrue(result.SequenceEqual(new[] { "apple", "cherry", "blueberry" }));
 		}
@@ -66,7 +67,7 @@ namespace LINQ.Exercises
 		[TestMethod]
 		public void OrderByPeopleByPersonsLastNameAlphabetically_returnOrderedPeople()
 		{
-			IEnumerable<TestData.Person> result = TestData.People;
+			IEnumerable<TestData.Person> result = TestData.People.OrderBy(w => w.LastName);
 
 			Assert.IsTrue(result.SequenceEqual(new[]
 			{
@@ -88,7 +89,8 @@ namespace LINQ.Exercises
 		{
 			string[] words = { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" };
 
-			var result = words;
+			var result = words.OrderBy(w => w, 
+				Comparer<string>.Create((stringOne, stringTwo) => string.CompareOrdinal(stringOne.ToLower(), stringTwo.ToLower())));
 
 			Assert.IsTrue(result.SequenceEqual(new[]
 			{
@@ -113,7 +115,13 @@ namespace LINQ.Exercises
 		[TestMethod]
 		public void OrderAssumingSpecialCondition_ReturnSpecialEnumeration()
 		{
-			var result = TestData.OrderByWordsExtended;
+			var result = TestData.OrderByWordsExtended.OrderBy(w => w,
+				Comparer<string>.Create((w1, w2) =>
+				{
+					var length1 = w1.Length % 2 == 0 ? w1.Length * 2 : w1.Length;
+					var length2 = w2.Length % 2 == 0 ? w2.Length * 2 : w2.Length;
+					return length1.CompareTo(length2);
+				}));
 
 			Assert.IsTrue(result.SequenceEqual(new[] { "apple", "zuchini", "blueberry", "cherry", "tamarind" }));
 		}
@@ -123,15 +131,15 @@ namespace LINQ.Exercises
 		{
 			double[] doubles = { 1.7, 2.3, 1.9, 4.1, 2.9 };
 
-			IEnumerable<double> result = doubles;
+			IEnumerable<double> result = doubles.OrderByDescending(n => n);
 
 			Assert.IsTrue(result.SequenceEqual(new[] { 4.1, 2.9, 2.3, 1.9, 1.7 }));
 		}
 
 		[TestMethod]
-		public void OrderByBirthDatesOldestToYoungest_returnPersonEnumeration()
+		public void OrderByBirthDatesYoungestToOldest_returnPersonEnumeration()
 		{
-			IEnumerable<TestData.Person> result = TestData.People;
+			IEnumerable<TestData.Person> result = TestData.People.OrderBy(p => p.Born);
 
 			Assert.IsTrue(result.SequenceEqual(new[]
 			{
@@ -143,9 +151,9 @@ namespace LINQ.Exercises
 		}
 
 		[TestMethod]
-		public void OrderByBirthDatesYoungestToOldest_returnPersonEnumeration()
+		public void OrderByBirthDatesOldestToYoungest_returnPersonEnumeration()
 		{
-			IEnumerable<TestData.Person> result = TestData.People;
+			IEnumerable<TestData.Person> result = TestData.People.OrderByDescending(p => p.Born);
 
 			Assert.IsTrue(result.SequenceEqual(new[]
 			{
@@ -160,7 +168,9 @@ namespace LINQ.Exercises
 		public void OrderByLengthAndThenAlphabetically_returnStringNumberation()
 		{
 			string[] digits = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
-			IEnumerable<string> result = digits;
+			IEnumerable<string> result = digits
+				.OrderBy(w => w.Length)
+				.ThenBy(w => w);
 
 			Assert.IsTrue(result.SequenceEqual(new[]
 				{ "one", "six", "two", "five", "four", "nine", "zero", "eight", "seven", "three" }));
@@ -179,7 +189,9 @@ namespace LINQ.Exercises
 
 			string[] words = { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" };
 
-			IEnumerable<string> result = words;
+			IEnumerable<string> result = words
+				.OrderBy(w => w.Length)
+				.ThenBy(w => w.ToLower());
 
 			Assert.IsTrue(result.SequenceEqual(new[] { "aPPLE", "AbAcUs", "bRaNcH", "cHeRry", "ClOvEr", "BlUeBeRrY" }));
 		}
@@ -191,7 +203,9 @@ namespace LINQ.Exercises
 		{
 			string[] digits = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
 
-			IEnumerable<string> result = digits;
+			IEnumerable<string> result = digits
+				.Where(w => w[1] == 'i')
+				.Reverse();
 
 			Assert.IsTrue(result.SequenceEqual(new[] { "nine", "eight", "six", "five" }));
 		}
